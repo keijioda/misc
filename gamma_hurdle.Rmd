@@ -9,13 +9,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Gamma hurdle model for sparsely eaten foods
 
-Let $Y_i$ be the gram intake (gram/day) of a sparsely eaten food for subject $i$, $i=1,2, \cdots, n$. Some subjects never eat the food and let $\pi$ be the proportion of $Y = 0$, i.e., $\pi = Pr(y = 0)$. For the rest of the subjects who consume the food with $Y > 0$, we expect that the distribution of such gram intakes is right-skewed. Assume that such a conditional distribution $Y|Y>0$ follows a gamma distribution with shape $k$ and scale $\theta$. 
+Let $Y_i$ be the gram intake (gram/day) of a sparsely eaten food for subject $i$, $i=1,2, \cdots, n$. Some subjects never eat the food and let $\pi$ be the proportion of $Y = 0$, i.e., $\pi = Pr(y = 0)$. For the rest of the subjects who consume the food with $Y > 0$, we expect that the distribution of such gram intakes is right-skewed. Assume that such a conditional distribution $Y_i \: | \: Y_i>0$ follows a gamma distribution with shape $k$ and scale $\theta_i$. 
 
 Let $f(y)$ be the distribution of $Y$. This can be modeled as a **finite mixture model** of two components:
 
 $$ f(y) = \pi_i (y = 0) + (1 - \pi_i) f(y \: | \: y > 0)$$
 
-where the conditional distribution $f(y | y > 0) \sim Gamma(k, \theta)$.
+where the conditional distribution $f(y | y > 0) \sim Gamma(k, \theta_i)$.
 
 The two-part model above is called a hurdle model, because there is a "hurdle" of zero values that must be crossed for $Y$ to be positive. A nice thing about this kind of hurdle models is that its (log) likelihood function is separable between the two components. This means that we can estimate the mixing probability $\pi_i$ separately from parameters in the gamma components.
 
@@ -27,4 +27,4 @@ Thus, $\hat{\pi} = [1 + exp(-\boldsymbol{X_i\hat{\beta}})]^{-1}$. Non-zero intak
 
 $$ log(\mu_i) = \boldsymbol{X_i\gamma}$$
 
-where $\mu_i = E(Y_i \:| \: Y_i > 0)$. In this gamma GLM model, I'm using the log link function (instead of the canonical link of reciprocal) and assuming the same set of predictors $\boldsymbol{X_i}$ as those used in the logistic model, for the sake of simplicity.
+where $\mu_i = E(Y_i \:| \: Y_i > 0) = k\theta_i$. In this gamma GLM model, I'm using the log link function (instead of the canonical link of reciprocal) and assuming the same set of predictors $\boldsymbol{X_i}$ as those used in the logistic model, for the sake of simplicity.
