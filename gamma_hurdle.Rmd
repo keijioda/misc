@@ -23,7 +23,7 @@ Assuming that $\pi_i$ is conditional on some predictors $\boldsymbol{X_i}$, this
 
 $$ log \left( \frac{\pi_i}{1 - \pi_i} \right) = \boldsymbol{X_i\beta}$$
 
-Non-zero intakes of $Y_i$ can be estimated by a generalized linear model with a gamma distribution:
+Thus, $\hat{\pi} = [1 + exp(-\boldsymbol{X_i\hat{\beta}})]^{-1}$. Non-zero intakes of $Y_i$ can be estimated by a generalized linear model with a gamma distribution:
 
 $$ log(\mu_i) = \boldsymbol{X_i\gamma}$$
 

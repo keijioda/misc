@@ -177,7 +177,7 @@ pre code {
 <p>The two-part model above is called a hurdle model, because there is a “hurdle” of zero values that must be crossed for <span class="math inline">\(Y\)</span> to be positive. A nice thing about this kind of hurdle models is that its (log) likelihood function is separable between the two components. This means that we can estimate the mixing probability <span class="math inline">\(\pi_i\)</span> separately from parameters in the gamma components.</p>
 <p>Assuming that <span class="math inline">\(\pi_i\)</span> is conditional on some predictors <span class="math inline">\(\boldsymbol{X_i}\)</span>, this can be estimated for each subject using logistic regression:</p>
 <p><span class="math display">\[ log \left( \frac{\pi_i}{1 - \pi_i} \right) = \boldsymbol{X_i\beta}\]</span></p>
-<p>Non-zero intakes of <span class="math inline">\(Y_i\)</span> can be estimated by a generalized linear model with a gamma distribution:</p>
+<p>Thus, <span class="math inline">\(\hat{\pi} = [1 + exp(-\boldsymbol{X_i\hat{\beta}})]^{-1}\)</span>. Non-zero intakes of <span class="math inline">\(Y_i\)</span> can be estimated by a generalized linear model with a gamma distribution:</p>
 <p><span class="math display">\[ log(\mu_i) = \boldsymbol{X_i\gamma}\]</span></p>
 <p>where <span class="math inline">\(\mu_i = E(Y_i \:| \: Y_i &gt; 0)\)</span>. In this gamma GLM model, I’m using the log link function (instead of the canonical link of reciprocal) and assuming the same set of predictors <span class="math inline">\(\boldsymbol{X_i}\)</span> as those used in the logistic model, for the sake of simplicity.</p>
 </div>
