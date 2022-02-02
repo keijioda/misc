@@ -55,7 +55,7 @@ power  <- 0.80
 * For DBP, we assumed:
   * A difference in mean change of 0.6, 0.8, or 1.0 mmHg between the two groups
   * A common standard deviation of 1.0 or 1.2 mmHg
-  
+
 * For a difference in mean change of 0.8 mmHg with SD = 1.2 and $\rho$ = 0.5, $n = 37$ subjects will be needed per group in order to achieve 80% of power with $\alpha = 0.05$.
 
 ```{r, echo=FALSE}
