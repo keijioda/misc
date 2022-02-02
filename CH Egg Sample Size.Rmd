@@ -1,0 +1,101 @@
+---
+title: "CH sample size for egg grant"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+
+# Research Design ---------------------------------------------------------
+# Two-arm parallel design
+# Measurements at baseline and after intervention
+# Compare change from baseline b/w the control and treatment
+
+# Functions ---------------------------------------------------------------
+# Function to calc SD of difference assuming equal variance
+sd_diff <- function(sd, rho) sqrt(2 * (sd ^ 2) - 2 * rho * (sd ^ 2))
+
+# Function to calc n based on two-sample t-test
+ss_calc <- function(delta, sd) power.t.test(delta = delta, sd = sd, power = power)$n
+
+# Assumptions -------------------------------------------------------------
+# Normality of the outcome
+# Equal variance b/w baseline and post-intervention
+# Equal variance b/w the control and treatment
+# Two-tailed with alpha = 0.05
+
+# Parameters --------------------------------------------------------------
+# Assumes 80% power
+power  <- 0.80
+
+```
+
+## Research design
+
+* Two-arm parallel design between a control diet and an intervention diet for 12 weeks
+* Two outcomes: diastolic blood pressure (DBP) and HDL cholesterol
+  * Will be measured at the baseline and at week 12
+  * Compare changes from baseline between the two groups
+
+## Assumptions
+
+* Two-tailed tests with $\alpha = 0.05$
+* For the sake of simplicity, we assumed:
+  * Outcome measures are normally distributed
+  * Equal variances between the baseline and the post-intervention
+  * Equal variances between the control and the intervention groups
+
+## Common parameters
+
+* Type I error of $\alpha = 0.05$ and power of 80%
+* A correlation between the baseline and the post-intervention (at week 12) was assumed to be $\rho$ = 0.4 or 0.5
+
+## Sample size for DBP
+
+* For DBP, we assumed:
+  * A difference in mean change of 0.6, 0.8, or 1.0 mmHg between the two groups
+  * A common standard deviation of 1.0 or 1.2 mmHg
+  
+* For a difference in mean change of 0.8 mmHg with SD = 1.2 and $\rho$ = 0.5, $n = 37$ subjects will be needed per group in order to achieve 80% of power with $\alpha = 0.05$.
+
+```{r, echo=FALSE}
+# SS calculation for BP ---------------------------------------------------
+# Effect size and SD
+delta <- c(0.6, 0.8, 1.0)
+sd    <- c(1.0, 1.2)
+rho   <- c(0.4, 0.5)
+
+out <- expand.grid(delta = delta, sd = sd, corr = rho) %>% 
+  arrange(delta, corr, sd) %>% 
+  mutate(sd_change = sd_diff(sd, corr),
+         n = unlist(map2(delta, sd_change, ss_calc)))
+out %>% 
+  mutate(sd_change = round(sd_change, 2), n = ceiling(n)) %>% 
+  knitr::kable()
+```
+
+## Sample size for HDL
+
+* For HDL, we assumed:
+  * A difference in mean change of 0.025, 0.075, or 0.1 mmol/L between the two groups
+  * A common standard deviation of 0.05 or 0.2 mmol/L
+
+* For a difference in mean change of 0.025 mmol/L with SD = 0.05 and $\rho$ = 0.5, $n = 64$ subjects will be needed per group in order to achieve 80% of power with $\alpha = 0.05$.
+
+* For a difference in mean change of 0.1 mmol/L with SD = 0.2 and $\rho$ = 0.5, $n = 64$ subjects will be needed per group in order to achieve 80% of power with $\alpha = 0.05$.
+
+```{r, echo=FALSE}
+# SS calculation for HDL --------------------------------------------------
+# Effect size and SD
+delta <- c(0.025, 0.075, 0.1)
+sd    <- c(0.05, 0.20)
+rho   <- c(0.4, 0.5)
+
+out <- expand.grid(delta = delta, sd = sd, corr = rho) %>% 
+  arrange(delta, corr, sd) %>% 
+  mutate(sd_change = sd_diff(sd, corr),
+         n = unlist(map2(delta, sd_change, ss_calc)))
+out %>% 
+  mutate(sd_change = round(sd_change, 2), n = ceiling(n)) %>% 
+  knitr::kable()
+```
