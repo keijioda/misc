@@ -23,13 +23,14 @@ IN sample size for GRASP
 ## Sample size for weight loss
 
 -   For weight loss as the primary outcome, we assumed:
-    -   A difference in mean weight loss of 1, 2, or 4 kg between the
-        two groups
+    -   A difference in mean weight loss (`delta`) of 1, 2, or 4 kg
+        between the two groups
     -   The standard deviation of weight equals to 2 or 4 kg
 -   The table below shows:
     -   The total sample size necessary at the end of the study
-    -   The sample size at the beggining of the study accounting for 10%
-        dropouts.
+        (`n_total`)
+    -   The sample size at the beginning of the study accounting for 10%
+        dropouts (`drop10`).
 
 | delta |  SD | rho |       Sw | n_total | drop10 |
 |------:|----:|----:|---------:|--------:|-------:|
