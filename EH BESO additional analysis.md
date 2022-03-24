@@ -11,7 +11,7 @@
 
 ```
                  Pre               Post              Ratio (Post/Pre)  Within  Between
-             Trt Mean  Lower Upper Mean  Lower Upper Mean  Lower Upper P-val   P-val
+             Trt Mean  Lower Upper Mean  Lower Upper Mean  Lower Upper P-val¹   P-val²
 ======================================================================================
 TNF-a Female  A  0.89  0.66  1.19  0.73  0.54  0.99  0.82  0.66  1.02  0.0205  0.1040
               B  0.89  0.66  1.19  0.88  0.65  1.20  0.99  0.80  1.24  0.9490 
@@ -22,6 +22,8 @@ TAS   Female  A  1.91  1.78  2.05  1.98  1.85  2.13  1.04  0.96  1.13  0.2317  0
       Male    A  1.92  1.64  2.25  2.31  1.97  2.71  1.20  0.96  1.51  0.0323  0.0634
               B  2.08  1.78  2.44  2.01  1.72  2.36  0.97  0.77  1.22  0.6577 
 ======================================================================================
+1: P-values of simple effect of time (pre/post) for each treatment.
+2: Treatment x time interaction p-values.
 ```
 
 ## Inflamamatory/oxidative markers by baseline BMI
@@ -31,13 +33,15 @@ TAS   Female  A  1.91  1.78  2.05  1.98  1.85  2.13  1.04  0.96  1.13  0.2317  0
 - Among all the inflammatory/oxidative markers, the 3-way interaction was found to be significant only on haptoglobin (*p* = 0.0035). Thus for this outcomes, we proceeded to BMI-stratified analysis:
 
 ```
-                    Pre                   Post                 Ratio (Post/Pre)  Within  Between
-               Trt  Mean  Lower  Upper    Mean   Lower  Upper   Mean  Lower Upper P-val   P-val
+                    Pre                   Post                  Ratio (Post/Pre)  Within  Between
+               Trt  Mean  Lower  Upper    Mean   Lower  Upper   Mean  Lower Upper P-val¹  P-val²
 ================================================================================================
 Hp  BMI < 30   A   71.06  30.53  165.40   72.65  31.21  169.10  1.02  0.68  1.53  0.8792  0.0455
                B   58.40  25.09  135.93   93.16  39.87  217.66  1.60  1.05  2.43  0.0058  
     BMI ≥ 30   A   99.75  76.33  130.36  120.63  92.30  157.65  1.21  0.87  1.68  0.1208  0.0263
                B  122.75  93.40  161.31   98.79  75.61  129.07  0.80  0.57  1.13  0.0898  
 ================================================================================================
+1: P-values of simple effect of time (pre/post) for each treatment.
+2: Treatment x time interaction p-values.
 ```
 
