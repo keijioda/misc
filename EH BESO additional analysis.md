@@ -23,3 +23,21 @@ TAS   Female  A  1.91  1.78  2.05  1.98  1.85  2.13  1.04  0.96  1.13  0.2317  0
               B  2.08  1.78  2.44  2.01  1.72  2.36  0.97  0.77  1.22  0.6577 
 ======================================================================================
 ```
+
+## Inflamamatory/oxidative markers by baseline BMI
+
+- Similarly, to examine if the effect of treatment is different between obese (BMI ≥ 30) and non-obese (BMI < 30) at baseline, such a dichotomous BMI variable was created and then added into the origianl model, along with the 3-way interaction of treatment x time x BMI (obese/non-obese). If the 3-way interaction is significant, this would suggest that the treatment effect is different dependent on baseline BMI and we will need to procced to stratified analysis by BMI.
+
+- Among all the inflammatory/oxidative markers, the 3-way interaction was found to be significant only on haptoglobin (*p* = 0.0035). Thus for this outcomes, we proceeded to BMI-stratified analysis:
+
+```
+                    Pre                   Post                 Ratio (Post/Pre)  Within  Between
+               Trt  Mean  Lower  Upper    Mean   Lower  Upper   Mean  Lower Upper P-val   P-val
+================================================================================================
+Hp  BMI < 30   A   71.06  30.53  165.40   72.65  31.21  169.10  1.02  0.68  1.53  0.8792  0.0455
+               B   58.40  25.09  135.93   93.16  39.87  217.66  1.60  1.05  2.43  0.0058  
+    BMI ≥ 30   A   99.75  76.33  130.36  120.63  92.30  157.65  1.21  0.87  1.68  0.1208  0.0263
+               B  122.75  93.40  161.31   98.79  75.61  129.07  0.80  0.57  1.13  0.0898  
+================================================================================================
+```
+
