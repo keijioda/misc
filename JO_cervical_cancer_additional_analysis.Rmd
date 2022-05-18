@@ -1,0 +1,254 @@
+---
+title: "JO Cervical cancer additional analysis"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+# Set working directory
+#setwd("M:\\Groups\\Grants_and_Studies\\AHS Cancer Screening Study")
+setwd("C:\\Users\\keiji\\Dropbox\\Consults\\Jisoo")
+
+# Required packages
+pacs <- c("tableone", "stargazer", "ggplot2", "gridExtra", "tidyverse")
+sapply(pacs, require, character.only=TRUE)
+
+# N obs = 95,873
+# Data compiled by Andrew
+temp <- read.csv("screening-data-file-2017-11-01.csv", header=TRUE)
+
+###############################################
+# Inclusion/exclusion criteria
+
+# Female only
+temp <- temp[temp$sex == 1 & !is.na(temp$sex),]
+
+# Age b/w 30 and 69
+temp <- temp[temp$age >= 30 & temp$age < 70 & !is.na(temp$age),]
+
+# Own cancer, write-ins
+temp$cancera <- tolower(trimws(temp$cancera))
+temp$cancerb <- tolower(trimws(temp$cancerb))
+temp$cancerc <- tolower(trimws(temp$cancerc))
+
+# Search for cervical cancer
+unique(agrep("cervi", temp$cancera, value=TRUE))
+unique(agrep("cervi", temp$cancerb, value=TRUE))
+unique(agrep("cervi", temp$cancerc, value=TRUE))
+
+temp$prevCC <- ifelse(agrepl("cervi", temp$cancera) | 
+                      agrepl("cervi", temp$cancerb) | 
+                      agrepl("cervi", temp$cancerc), 1, 0)
+
+# Exclude prevalent cases of cervical cancer
+temp <- temp[temp$prevCC == 0,]
+
+# Exclude those who had histerectomy
+historec2 <- factor(temp$historec, labels=c("No", "Not sure", "Yes"))
+temp <- temp[temp$historec == 1 & !is.na(temp$historec),]
+
+# Take care of zero on test pap
+temp$testpap[temp$testpap == 0] <- 1
+
+# Exclude missing testpap (n = 793)
+temp <- temp[!is.na(temp$testpap),]
+
+# Exclude pap smear 3-4 years
+# Comment or Uncomment depending on whether to include those screened 3-4 years
+temp <- temp[temp$testpap != 3,]
+
+# BMI b/w 16 and 60
+ccss <- temp[temp$bmi >= 16 & temp$bmi <= 60 & !is.na(temp$bmi),]
+
+###############################################
+# Demographics and lifestyle variables
+
+# Age as categorical
+# ccss$agecat <- cut(ccss$age, c(30, 41, 51, 61, 71), right=FALSE)
+ccss$agecat <- cut(ccss$age, c(30, 40, 50, 60, 70), right=FALSE)
+
+# Race/Ethnicity
+ccss$ethyou <- trimws(ccss$ethyou)
+blk <- c('02', '03', '04', '05', '39', '40', '63', '74', '77', '96')
+ccss$race3 <- 3
+ccss$race3[ccss$ethyou == "01"]  <- 1
+ccss$race3[ccss$ethyou %in% blk] <- 2
+ccss$race3[ccss$ethyou %in% c("", "**")] <- NA
+ccss$race3 <- factor(ccss$race3, labels=c("Non-Hisp White", "Black", "Other"))
+
+# Marital status
+ccss$marital3 <- cut(ccss$marital, c(1, 2, 5, 8), right=FALSE)
+ccss$marital3 <- factor(ccss$marital3, labels=c("Never married", "Married", "Divorced/Widowed"))
+ccss$marital3 <- factor(ccss$marital3, levels(ccss$marital3)[c(2, 3, 1)])
+
+# Education
+ccss$educ5 <- cut(ccss$educyou, c(1, 3, 5, 7, 8, 10), right=FALSE)
+educ_levels <- c("Some HS or less", "HS/TS Diploma", "Some college", "Bachelors deg", "Postgrad deg")
+ccss$educ5 <- factor(ccss$educ5, labels=educ_levels)
+
+# Personal income
+ccss$incomey[ccss$incomey >= 5] <- 5
+income_levels <- c("<$10K", "$11K-20K", "$21K-30K", "$31K-50K", ">$50K")
+ccss$incomey <- factor(ccss$incomey, labels=income_levels)
+
+# Household income
+ccss <- ccss %>% mutate(incomeh2 = incomeh,
+                incomeh2 = factor(incomeh2, labels = c("<$10k", "$11-20k", "$21-30k", "$31-50k", "$51-75k", "$76-100k", "$101-200k", ">$200k")))
+ccss$incomeh[ccss$incomeh >= 5] <- 5
+ccss$incomeh <- factor(ccss$incomeh, labels=income_levels)
+
+# BMI category
+ccss$bmicat  <- cut(ccss$bmi, c(16, 18.5, 25, 30, 61), right=FALSE)
+ccss$bmicat  <- factor(ccss$bmicat, labels=c("Underweight", "Normal", "Overweight", "Obese"))
+ccss$bmicat2 <- factor(ccss$bmicat, levels=levels(ccss$bmicat)[c(2, 1, 3, 4)])
+
+# Smoking
+ccss$smokeEver[ccss$smoke == 1]    <- 0
+ccss$smokeEver[ccss$smoke > 1]     <- 1
+ccss$smokeEver[ccss$smokenow == 1] <- 1
+ccss$smokeEver <- factor(ccss$smokeEver, labels=c("Never", "Ever"))
+
+# Alcohol
+ccss$alcEver[ccss$alcohol == 1] <- 0
+ccss$alcEver[ccss$alcohol == 2] <- 1
+ccss$alcEver[ccss$alcnow  == 1] <- 1
+ccss$alcEver <- factor(ccss$alcEver, labels=c("Never", "Ever"))
+
+# Dietary pattern
+ccss$fishothf[is.na(ccss$fishothf)] <- 1
+ccss$evapmlkf[is.na(ccss$evapmlkf)] <- 1 
+ccss$ensuref[is.na(ccss$ensuref)]   <- 1 
+ccss$ovaltinf[is.na(ccss$ovaltinf)] <- 1 
+
+fpd <- c(0, 0.067, 0.143, 0.429, 0.786, 1, 2.5, 4.5, 6.5)
+meat_var  <- c("beefhamf", "beefprof", "lambf",    "poultryf", "poulprof")
+fish_var  <- c("fishsalf", "fishwhtf", "fishtunf", "fishothf")
+dairy_var <- c("eggbetrf", "cheamerf", "butterf",  "mlkwholf", "mlklowff", "cottagef", 
+               "checremf", "chelowff", "evapmlkf", "yogurtlf", "yogurtrf", "othdairf",
+               "icecremf", "icemilkf", "ensuref",  "ovaltinf")
+
+meat  <- Reduce("+", lapply(ccss[meat_var],  function(x) fpd[match(x, 1:9)]))
+fish  <- Reduce("+", lapply(ccss[fish_var],  function(x) fpd[match(x, 1:9)]))
+dairy <- Reduce("+", lapply(ccss[dairy_var], function(x) fpd[match(x, 1:9)]))
+meatfish <- meat + fish
+
+vegan <- ifelse(meat < .033 & fish < .033 & dairy < .033, 1, 0)
+lacto <- ifelse(meat < .033 & fish < .033 & dairy >= .033, 1, 0)
+semi  <- ifelse(meat >= .033 & (meatfish >= .033 & meatfish <= .143), 1, 0)
+pesco <- ifelse(meat < .033 & fish >= .033, 1, 0)
+noveg <- ifelse(meat >= .033 & meatfish > .143, 1, 0)
+
+ccss$vegstat <- 5 * vegan + 4 * lacto + 3 * semi + 2 * pesco + 1 * noveg
+ccss$vegstat <- factor(ccss$vegstat, labels=c("Non-veg", "Pesco", "Semi", "Lacto-ovo", "Vegan"))
+
+# Physical activity
+times <- ccss$walkrunf - 1
+duration <- c(0, 5, 15, 25, 35, 45, 55, 60)[match(ccss$exeramt, 1:8)]
+minutes  <- c(5, 15, 25, 35, 45, 55, 60)[match(ccss$walkruna, 1:7)]
+distance <- c(0.25, 0.5, 1, 1.5, 2, 3, 4)[match(ccss$walkrund, 1:7)]
+vigofreq <- ifelse(ccss$exerfreq - 2 < 0, 0, ccss$exerfreq - 2) 
+
+ex4b4c <- times * distance
+ex4b4d <- times * minutes
+ex3a3b <- vigofreq * duration
+
+none <- ifelse((ex3a3b == 0 & (ccss$walkrun == 2 | is.na(ccss$walkrun))) | 
+               (ex3a3b == 0 & times == 0) |
+               (vigofreq == 0 & ccss$walkrun == 2), 1, 0)
+low  <- ifelse((0 < ex3a3b & ex3a3b < 105) | 
+               (0 < ex4b4d & ex4b4d < 105) | 
+               (0 < ex4b4c & ex4b4c < 3), 1, 0)
+mid  <- ifelse(ex3a3b >= 105 | 
+               (105 <= ex4b4d & ex4b4d < 175) | 
+               (3 <= ex4b4c & ex4b4c < 9), 1, 0)
+hi   <- ifelse(ex4b4d >= 175 | ex4b4c >= 9, 1, 0)
+
+ccss$exercise[none == 1] <- 1
+ccss$exercise[low  == 1] <- 2
+ccss$exercise[mid  == 1] <- 3
+ccss$exercise[hi   == 1] <- 4
+ccss$exercise <- factor(ccss$exercise, labels=c("None", "Low", "Moderate", "Vigorous"))
+
+###############################################
+# Family cancer variables
+
+fm_fem_ca_var <- grep("breast|ovary", names(ccss), value=TRUE)
+fm_oth_ca_var <- grep("colon|prost|pancr", names(ccss), value=TRUE)
+fm_all_ca_var <- c(fm_fem_ca_var, fm_oth_ca_var)
+fm_ca_write   <- grep("cancero", names(ccss), value=TRUE)
+
+# Find family history of breast or ovary cancer
+fm_ca  <- Reduce("+", lapply(ccss[fm_fem_ca_var], function(x) !is.na(x)))
+ccss$fmhxfemca <- ifelse(fm_ca > 0, 1, 0)
+
+# Find among write-ins
+search_words <- c('cervix', 'cervex', 'cervic', 'cevic', 'cervx', 'cervi\\.', 'crvcl', 'embryonic',
+                  'endmet', 'fallop', 'fem', 'indomet', 'lungutrus', 'vagin', 'vag\\.', 'vulv', 'uter', 'womb')
+search_words <- paste(search_words, collapse="|")
+
+for (i in seq_along(ccss[fm_ca_write])){
+  ccss$fmhxfemca[grep(search_words, ccss[, fm_ca_write[i]], ignore.case=TRUE)] <- 1
+}
+
+# Take care of missing
+# Must remove all white spaces from write-ins
+ccss[fm_ca_write] <- lapply(ccss[fm_ca_write], trimws)
+
+# Count # of missing from write-ins
+count_writein_miss <- Reduce("+", lapply(ccss[fm_ca_write], function(x) x == ""))
+
+# COunt # of missing from all family cancers
+count_circle_miss <- Reduce("+", lapply(ccss[fm_all_ca_var], is.na))
+
+# if all missing, then assign missing
+ccss$fmhxfemca[is.na(ccss$a02q5) & count_writein_miss == 10 & count_circle_miss == 25] <- NA
+
+# Factor the variable
+ccss$fmhxfemca <- factor(ccss$fmhxfemca, labels=c("No", "Yes"))
+
+###############################################
+# Pap smear
+# Screening variable
+ccss$screened <- ifelse(ccss$testpap == 4, 1, 0)
+#ccss$screened <- ifelse(ccss$testpap %in% c(3, 4), 1, 0)
+
+###############################################
+# CCSS2 is a complete data
+covars <- c("screened", "agecat", "race3", "marital3", "educ5", "incomey", "vegstat", "smokeEver", "alcEver", "exercise", "fmhxfemca")
+ccss2 <- ccss[covars]
+ccss2 <- ccss[complete.cases(ccss2),]
+ccss2$screened2 <- factor(ccss2$screened, labels=c("Never or 5+ yrs ago", "0-2 yrs ago"))
+```
+
+## Descriptive table by dietary pattern
+
+```{r echo = FALSE}
+# Table 2 by dietary pattern
+tabVars2 <- c("screened", "agecat", "age", "race3", "marital3", "educ5", "incomey", "bmicat", "bmi", 
+              "smokeEver", "alcEver", "exercise", "fmhxfemca")
+ccss2 %>% 
+  mutate(screened = factor(screened, labels = c("Not screened", "Screened")),
+         vegstat = fct_relevel(vegstat, "Pesco", after = 2)) %>% 
+  CreateTableOne(tabVars2, strata="vegstat", data=.) %>% 
+  print(showAllLevels = TRUE, contDigits = 1, pDigits = 4) %>% 
+  kableone()
+
+```
+
+## Household income
+
+* Household income (`incomeh`) has `r sum(is.na(ccss2$incomeh))` more missing values than personal income (`incomey`). We don't have a variable that indicate the number of family members in the household (`HouseHld`), though. 
+
+```{r echo = FALSE}
+# Income
+# Personal vs household
+ccss2 %>% select(incomey, incomeh) %>% summary()
+```
+
+* Household income in the original 8 categories:
+
+```{r echo = FALSE}
+ccss2 %>% 
+  CreateTableOne("incomeh2", data=.) %>% 
+  kableone()
+```
