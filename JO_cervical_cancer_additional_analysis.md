@@ -75,3 +75,58 @@ JO Cervical cancer additional analysis
 | $76-100k     | 2599 (15.2) |
 | $101-200k    | 2286 (13.4) |
 | \>$200k      | 554 ( 3.2)  |
+
+## Multiple imputation by chained equations
+
+-   To evaluate a potential impact of excluding subjects with any
+    missing covariate values, we have conducted multiple imputation (MI)
+    as sensitivity analysis.
+    -   MI was conducted on the dataset prior to the exclusion of such
+        subjects (n = 28,747), assuming covariate values are missing at
+        random.
+    -   Chained equations were used to generate 5 imputed datasets using
+        “mice” package (version 3.14.0) in R. For binary variables,
+        logistic regression was used for missing imputation. For nominal
+        variable with more than 2 levels, multinomial logistic
+        regression was used. For ordinal variables, ordinal logistic
+        regression was used.
+    -   After multiple imputation, estimated beta coefficients and their
+        standard errors from imputed datasets were pooled to obtain the
+        final estimates using Rubin’s rule, and then prevalence ratios
+        (PRs) were computed.
+-   PRs were virtually identical to those in Table 3, confirming that
+    the exclusion of subjects with missing covariates did not affect our
+    results.
+
+<!-- -->
+
+| term                     | estimate | 2.5 % | 97.5 % |
+|:-------------------------|---------:|------:|-------:|
+| agecat\[40,50)           |     0.97 |  0.96 |   0.99 |
+| agecat\[50,60)           |     0.95 |  0.94 |   0.96 |
+| agecat\[60,70)           |     0.93 |  0.92 |   0.95 |
+| race3Black               |     1.03 |  1.02 |   1.04 |
+| race3Other               |     0.97 |  0.95 |   0.99 |
+| marital3Divorced/Widowed |     0.95 |  0.94 |   0.97 |
+| marital3Never married    |     0.84 |  0.82 |   0.86 |
+| educ5HS/TS Diploma       |     1.02 |  0.99 |   1.05 |
+| educ5Some college        |     1.07 |  1.04 |   1.10 |
+| educ5Bachelors deg       |     1.09 |  1.06 |   1.12 |
+| educ5Postgrad deg        |     1.10 |  1.07 |   1.14 |
+| incomey$11K-20K          |     1.02 |  1.00 |   1.03 |
+| incomey$21K-30K          |     1.06 |  1.05 |   1.08 |
+| incomey$31K-50K          |     1.09 |  1.08 |   1.11 |
+| incomey\>$50K            |     1.10 |  1.08 |   1.12 |
+| bmicat2Underweight       |     0.92 |  0.88 |   0.96 |
+| bmicat2Overweight        |     1.00 |  0.99 |   1.01 |
+| bmicat2Obese             |     1.00 |  0.98 |   1.01 |
+| smokeEverEver            |     0.99 |  0.97 |   1.00 |
+| alcEverEver              |     1.03 |  1.02 |   1.04 |
+| vegstatPesco             |     0.98 |  0.96 |   0.99 |
+| vegstatSemi              |     0.97 |  0.95 |   0.99 |
+| vegstatLacto-ovo         |     0.97 |  0.96 |   0.98 |
+| vegstatVegan             |     0.83 |  0.80 |   0.85 |
+| exerciseLow              |     1.02 |  1.01 |   1.04 |
+| exerciseModerate         |     1.04 |  1.03 |   1.06 |
+| exerciseVigorous         |     1.04 |  1.03 |   1.06 |
+| fmhxfemcaYes             |     1.03 |  1.01 |   1.04 |

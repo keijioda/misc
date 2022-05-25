@@ -6,8 +6,8 @@ output: github_document
 ```{r setup, include=FALSE}
 
 # Set working directory
-#setwd("M:\\Groups\\Grants_and_Studies\\AHS Cancer Screening Study")
-setwd("C:\\Users\\keiji\\Dropbox\\Consults\\Jisoo")
+setwd("M:\\Groups\\Grants_and_Studies\\AHS Cancer Screening Study")
+# setwd("C:\\Users\\keiji\\Dropbox\\Consults\\Jisoo")
 
 # Required packages
 pacs <- c("tableone", "stargazer", "ggplot2", "gridExtra", "tidyverse")
@@ -251,4 +251,50 @@ ccss2 %>% select(incomey, incomeh) %>% summary()
 ccss2 %>% 
   CreateTableOne("incomeh2", data=.) %>% 
   kableone()
+```
+
+## Multiple imputation by chained equations
+
+* To evaluate a potential impact of excluding subjects with any missing covariate values, we have conducted multiple imputation (MI) as sensitivity analysis.
+  * MI was conducted on the dataset prior to the exclusion of such subjects (n = 28,747), assuming covariate values are missing at random.
+  * Chained equations were used to generate 5 imputed datasets using "mice" package (version 3.14.0) in R. For binary variables, logistic regression was used for missing imputation. For nominal variable with more than 2 levels, multinomial logistic regression was used. For ordinal variables, ordinal logistic regression was used. 
+  * After multiple imputation, estimated beta coefficients and their standard errors from imputed datasets were pooled to obtain the final estimates using Rubin’s rule, and then prevalence ratios (PRs) were computed.
+
+* PRs were virtually identical to those in Table 3, confirming that the exclusion of subjects with missing covariates did not affect our results.
+
+```{r echo = FALSE}
+###############################################
+# Multiple imputation
+library(mice)
+library(geepack)
+
+ccss_imp <- ccss[c(covars, "analysisid", "bmicat2")] %>% as_tibble()
+
+# Imputation method
+# For binal variables, use the logistic model
+# For ordinal variables, use the proportional odds model ("polr")
+# For nominal variables of > 2 levels, use the multinomial (polytomous) logistic model
+test <- mice(ccss_imp, m = 1, maxit = 0)
+method <- test$method
+method[c("educ5", "incomey", "exercise")] <- "polr"
+
+# Remove analysisid from imputation model
+pred <- test$predictorMatrix
+pred[, "analysisid"] <- 0
+
+# Run multiple imputations with m = 5
+ccss_mice <- mice(ccss_imp, m = 5, seed = 2948, method = method, predictorMatrix = pred)
+
+fit <- with(ccss_mice, geeglm(screened ~ agecat + race3 + marital3 + educ5 + incomey + bmicat2 +
+                                smokeEver + alcEver + vegstat + exercise + fmhxfemca, 
+                              family = poisson(link = "log"), 
+                              id = analysisid, 
+                              corstr  = "exchangeable"))
+
+summary(pool(fit), conf.int = TRUE) %>% 
+  select(1:2, 7:8) %>% 
+  mutate(across(2:4, exp)) %>% 
+  mutate(across(2:4, round, 2)) %>% 
+  slice(-1) %>% 
+  knitr::kable()
 ```
